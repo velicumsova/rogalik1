@@ -1,6 +1,5 @@
 import curses
 
-
 class Console:
     def __init__(self, width=150, height=49):
         self.stdscr = curses.initscr()
