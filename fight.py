@@ -2,7 +2,7 @@ import random
 from typing import List
 from enum import Enum
 
-import console
+from console import Console
 class Unit:
     def __init__(self) -> None:
         self.max_health = 100
@@ -10,8 +10,7 @@ class Unit:
         self.base_attack = 0
         self.real_attack = 10
         self.armor = 0
-        self.current_armor = self.armor
-        self.fight_armor = 0
+        self.additional_armor = self.armor
         # self.agility = 10
         self.estus = 3  # TODO: ??? 인벤토리로 이동 ???
 
@@ -22,7 +21,7 @@ class Unit:
         other.get_damage(self.real_attack)
 
     def get_real_damage(self):
-        damage_multiplier = 1 - (0.06 * self.current_armor + self.fight_armor)/(1 + 0.06 * self.current_armor + self.fight_armor)
+        damage_multiplier = 1 - (0.06 * self.additional_armor + self.additional_armor) / (1 + 0.06 * self.additional_armor + self.additional_armor)
         return damage_multiplier
 
 
@@ -46,6 +45,7 @@ class Player(Unit):
     #     for potion in self.effects:
     #         if potion.duration > 0:
     #             self.real_attack = self.base_attack + potion.value * len(filter(lambda effect: effect.duration > 0 and effect.name == potion.name))
+
 
 class Enemy(Unit):
     money_after_death = 10
@@ -166,17 +166,19 @@ class Effect:
 
 
 class Battle:
-    def __init__(self, player: Player, enemy: Enemy) -> None:
+    def __init__(self, player: Player, enemy: Enemy, console: Console) -> None:
         self.player = player
         self.enemy = enemy
         # self.console = console_
 
 
-    def fight(self, player, enemy):
+    def fight(player: Player, enemy: Enemy):
         turn = 1  # Порядок хода
         player_condition = True  # True = Life; False - Death
 
-        while self.player.current_health > 0 and self.enemy.current_health > 0:
+        while player.current_health > 0 and enemy.current_health > 0:
+            print(f"Хп врага - {enemy.current_health}")
+            print(f"Мой хп - {player.current_health}\n")
             turn += 1
             if turn % 2 == 0:  # Мой ход
                 enemy_solution = random.randint(1, 3)
@@ -194,29 +196,29 @@ class Battle:
                     if dice == 1:
                         print(f"Attack is missed")
                     elif 2 <= dice <= 15:
-                        self.enemy.get_damage(self.player.real_attack)
+                        enemy.get_damage(player.real_attack)
                     elif 16 <= dice <= 20:
-                        self.enemy.get_damage(self.player.real_attack)
+                        enemy.get_damage(player.real_attack)
 
-                    if self.enemy.current_health <= 0:  # Смерть врага
-                        self.player.level_up(enemy.exp_after_death)
-                        self.player.money += enemy.money_after_death
+                    if enemy.current_health <= 0:  # Смерть врага
+                        player.level_up(enemy.exp_after_death)
+                        player.money += enemy.money_after_death
                         print(f"Победил игрок")
                         return player_condition
 
                 if player_solution == BattleAction.BLOCK:
-                    self.player.fight_armor += 5
-                    self.player.current_armor += self.player.fight_armor
+                    player.additional_armor += 5
+                    player.additional_armor += player.armor
                     # TODO: добавить взаимодействие с броней и сделать броню на определенное количество ходов
 
                 if player_solution == BattleAction.ESTUS:
-                    difference_in_health = self.player.max_health - self.player.current_health
-                    if difference_in_health >= 10 and self.player.estus > 0:
-                        self.player.current_health += 10
-                        self.player.estus -= 1
-                    elif difference_in_health < 10 and self.player.estus > 0:
-                        self.player.current_health += difference_in_health
-                        self.player.estus -= 1
+                    difference_in_health = player.max_health - player.current_health
+                    if difference_in_health >= 10 and player.estus > 0:
+                        player.current_health += 10
+                        player.estus -= 1
+                    elif difference_in_health < 10 and player.estus > 0:
+                        player.current_health += difference_in_health
+                        player.estus -= 1
 
                 if player_solution == BattleAction.ABILITY:
                     pass
@@ -229,18 +231,18 @@ class Battle:
                     if dice == 1:
                         print(f"Attack is missed")
                     elif 2 <= dice <= 15:
-                        self.player.get_damage(enemy.real_attack)
+                        player.get_damage(enemy.real_attack)
                     elif 16 <= dice <= 20:
-                        self.player.get_damage(2 * enemy.real_attack)
+                        player.get_damage(2 * enemy.real_attack)
 
-                    if self.player.current_health <= 0:
+                    if player.current_health <= 0:
                         player_condition = False
                         print(f"Победил враг")
                         return player_condition
 
                 if enemy_solution == BattleAction.BLOCK:
-                    self.enemy.fight_armor += 5
-                    self.enemy.current_armor += self.enemy.fight_armor
+                    enemy.additional_armor += 1
+                    enemy.additional_armor += enemy.additional_armor
                     # TODO: добавить взаимодействие с броней и сделать броню на определенное количество ходов
 
                 if enemy_solution == BattleAction.ABILITY:
@@ -249,4 +251,4 @@ class Battle:
 
 me = Player()
 enemy = Demon()
-Battle = Battle.fight(me, decimal)
+Battle = Battle.fight(me, enemy)
