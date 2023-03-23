@@ -9,8 +9,8 @@ class Unit:
         self.current_health = self.max_health
         self.base_attack = 0
         self.real_attack = 10
-        self.armor = 0
-        self.additional_armor = self.armor
+        self.base_armor = 10
+        self.additional_armor = 0
         # self.agility = 10
         self.estus = 3  # TODO: ??? 인벤토리로 이동 ???
 
@@ -21,7 +21,7 @@ class Unit:
         other.get_damage(self.real_attack)
 
     def get_real_damage(self):
-        damage_multiplier = 1 - (0.06 * self.additional_armor + self.additional_armor) / (1 + 0.06 * self.additional_armor + self.additional_armor)
+        damage_multiplier = 1 - (0.06 * (self.additional_armor + self.base_armor) + (self.additional_armor + self.base_armor)) / (1 + 0.06 * (self.additional_armor + self.base_armor) + (self.additional_armor + self.base_armor))
         return damage_multiplier
 
 
@@ -60,7 +60,7 @@ class Knight(Enemy):
         super().__init__()
         self.exp_after_death = 20
         # self.agility = self.agility * 1.5
-        self.armor = self.armor * 1.5
+        self.armor = self.base_armor * 1.5
         self.max_health = self.max_health * 0.7
 
     knight_ascii = r'''
@@ -121,7 +121,7 @@ class Demon(Enemy):
         super().__init__()
         self.exp_after_death = 15
         self.attack = self.real_attack * 1.3
-        self.armor = self.armor * 0.7
+        self.armor = self.base_armor * 0.7
 
     demon_ascii = r'''
  *                       *
@@ -151,7 +151,7 @@ class Seller(Unit):
     pass
     # TODO: Добавить продавца
 
-class BattleAction:
+class BattleAction(Enum):
     ATTACK = 1
     BLOCK = 2
     ABILITY = 3
@@ -177,8 +177,10 @@ class Battle:
         player_condition = True  # True = Life; False - Death
 
         while player.current_health > 0 and enemy.current_health > 0:
-            print(f"Хп врага - {enemy.current_health}")
-            print(f"Мой хп - {player.current_health}\n")
+            enemy.additional_armor -= 5
+            player.additional_armor -= 5
+            print(f"Хп врага: {enemy.current_health}, обшая броня врага: {enemy.additional_armor+enemy.base_armor}")
+            print(f"Мой хп: {player.current_health}, моя общая броня: {player.additional_armor + player.base_armor}\n")
             turn += 1
             if turn % 2 == 0:  # Мой ход
                 enemy_solution = random.randint(1, 3)
@@ -207,9 +209,7 @@ class Battle:
                         return player_condition
 
                 if player_solution == BattleAction.BLOCK:
-                    player.additional_armor += 5
-                    player.additional_armor += player.armor
-                    # TODO: добавить взаимодействие с броней и сделать броню на определенное количество ходов
+                    player.additional_armor += 5  # TODO: Добавить фукнцию для брони
 
                 if player_solution == BattleAction.ESTUS:
                     difference_in_health = player.max_health - player.current_health
@@ -241,9 +241,7 @@ class Battle:
                         return player_condition
 
                 if enemy_solution == BattleAction.BLOCK:
-                    enemy.additional_armor += 1
-                    enemy.additional_armor += enemy.additional_armor
-                    # TODO: добавить взаимодействие с броней и сделать броню на определенное количество ходов
+                    enemy.additional_armor += 5
 
                 if enemy_solution == BattleAction.ABILITY:
                     pass
