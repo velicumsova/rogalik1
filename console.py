@@ -1,4 +1,5 @@
 import curses
+import random
 
 class Console:
     def __init__(self, width=150, height=49):
@@ -30,14 +31,23 @@ class Console:
         # Очищает консоль
         self.stdscr.clear()
 
-    # def refresh(self):
-    #     # Обновляет консоль, вносит все сделанные изменения
-    #     self.stdscr.refresh()
+    def refresh(self):
+        # Обновляет консоль, вносит все сделанные изменения
+        self.stdscr.refresh()
+
+    def napms(self, time_to_sleep=100):
+        # Задержка на 100 миллисекунд
+        curses.napms(time_to_sleep)
 
     def get_char(self):
         # Возвращает ASCII-код нажатой клавиши
         key = self.stdscr.getch()
         return key
+
+    @staticmethod
+    def clear_buffer():
+        # очищает буфер клавиатуры, удаляя все нажатые, но еще не обработанные символы.
+        curses.flushinp()
 
     def write_line(self, x: int, y: int, line: str):
         # Вывод строки в консоль
@@ -75,6 +85,12 @@ class Console:
         for i in range(len(list_of_string)):
             self.write_line(x, y, list_of_string[i])
             y += 1
+    def get_long_string_size(self, big_string: str):
+        # возвращает размеры большой строки
+        S = big_string.split('\n')
+        if len(S) == 0:
+            return 0, 0
+        return len(S[0]), len(S)
 
     def write_border(self, x: int, y: int, width: int, height: int):
         # рисует рамку
