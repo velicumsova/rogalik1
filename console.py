@@ -17,10 +17,10 @@ class Console:
         current_console_height, current_console_width = self.stdscr.getmaxyx()
 
         if current_console_width < width:
-            raise Exception(f'Ширина консоли меньше {width}')
+            raise Exception(f'Ширина консоли = {current_console_width}. Меньше {width}')
 
         if current_console_height < height:
-            raise Exception(f'Ширина консоли меньше {height}')
+            raise Exception(f'Высота консоли = {current_console_height}. Меньше {height}')
 
     def finish_work(self):
         curses.nocbreak()
