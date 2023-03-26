@@ -2,7 +2,7 @@ import random
 from typing import List
 from enum import Enum
 
-from console import Console
+# from console import Console
 class Unit:
     def __init__(self) -> None:
         self.max_health = 100
@@ -32,7 +32,7 @@ class Player(Unit):
         self.money = 0
         self.exp_for_level = 10
         self.current_exp = 0
-        self.effects: List[Effect] = []
+        # self.effects: List[Effect] = []
     def level_up(self, experience) -> None:
         self.current_exp += experience
         if self.current_exp >= self.exp_for_level:
@@ -165,31 +165,10 @@ class BattleAction(Enum):
 #         self.value = value
 
 
-class Item:
-    def __init__(self, name, description):
-        self.name = name
-        self.description = description
-
-class Armor(Item):
-    def __init__(self, name, description, item_armor):
-        super().__init__(name, description)
-        self.item_armor = item_armor
-
-class Weapon(Item):
-    def __init__(self, name, description, item_damage):
-        super().__init__(name, description)
-        self.item_damage = item_damage
-
-class Potion(Item):
-    def __init__(self, name, description, duration, effect_value):
-        super().__init__(name, description)
-        self.effect_value = effect_value
-
-
-
 
 class Battle:
-    def __init__(self, player: Player, enemy: Enemy, console: Console) -> None:
+    def __init__(self, player: Player, enemy: Enemy) -> None:
+        # , console: Console
         self.player = player
         self.enemy = enemy
         # self.console = console_
@@ -200,9 +179,9 @@ class Battle:
         player_condition = True  # True = Life; False - Death
 
         while player.current_health > 0 and enemy.current_health > 0:
-            enemy.additional_armor -= 5
-            player.additional_armor -= 5
-            print(f"Хп врага: {enemy.current_health}, обшая броня врага: {enemy.additional_armor+enemy.base_armor}")
+            # enemy.additional_armor -= 5
+            # player.additional_armor -= 5
+            print(f"Хп врага: {enemy.current_health}, общая броня врага: {enemy.additional_armor+enemy.base_armor}")
             print(f"Мой хп: {player.current_health}, моя общая броня: {player.additional_armor + player.base_armor}\n")
             turn += 1
             if turn % 2 == 0:  # Мой ход
