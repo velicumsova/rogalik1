@@ -1,4 +1,3 @@
-# код отвечающий за лабиринт и перемещение по ниму
 from random import randint
 from random import choice
 import time
@@ -24,45 +23,15 @@ keyboard.block_key('d')
 
 
 class Room:
-    def init(self, x=None, y=None):
-        self.idRoom = x
-        self.typeRoom = y
-
-    def print_info(self):  # вывод id и тип комнаты
-        print(self.idRoom, self.typeRoom)
-
-class RoomMonster(Room): #room with monster
-    def __init__(self, plug, x, y):
-        super().init(x, y)
-        self.plug = plug
-
-    def print_info(self):
-        super().print_info()  # вызов метода родительского класса
-        print(self.plug)
-
-class RoomFountain(Room): #room fountain
-    def __init__(self, health, x, y):  #
-        super().init(x, y)
-        self.health = health
-
-    def print_info(self):
-        super().print_info()
-        print(self.health)
-
-class RoomChest(Room):
-    def __init__(self, money, items,  x, y):
-        super().init(x, y)
-        self.money = money
-        self.items = items
-
-    def print_info(self):
-        super().print_info()  # вызов метода родительского класса
-        print(self.money, '', self.items)
+    def __init__(self, id, type):
+        self.idRoom = id
+        self.typeRoom = type
+        self.check = 0
 
 class Labyrinth(object):
     rooms_place = [[0, 0, 0, 0], [0, 0,0,0], [0, 0,0,0], [0,0, 0, 0]]
     walls = [[0 for j in range(144)] for i in range(60)]
-
+    rooms = [[None for j in range(4)] for i in range(4)]
     def generate(self):
         self.rooms_place = [[1, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0]]
         self.walls = [[0 for j in range(144)] for i in range(60)]
@@ -104,12 +73,16 @@ class Labyrinth(object):
             for j in range(4):
                 if self.rooms_place[i][j]==1:
                     if rooms_num>0:
-                        self.rooms_place[i][j] = randint(3,6)
+                        self.rooms_place[i][j] = randint(3,5)
                         rooms_num=rooms_num-1
                     else:
                         self.rooms_place[i][j] = 7
         self.rooms_place[0][0]=1
 
+        self.rooms = [[None for j in range(4)] for i in range(4)]
+        for i in range(4):
+            for j in range(4):
+                self.rooms[i][j] = Room(i * 4 + j + 1, self.rooms_place[i][j])
 
         #перенос в двумерный массив
         for i in range(1, 62):
@@ -161,30 +134,31 @@ class Labyrinth(object):
                 if self.walls[i][j] == 9:
                     print("\u001b[37;1m", end="")
                     print("&", end="")
-                # elif self.walls[i][j] == 1:
-                #     print("\u001b[48;5;232m", end="")
-                #     print(" ", end="")
-                #     print("\u001b[48;5;235m", end="")
-                # elif self.walls[i][j] == 2:
-                #     print("\u001b[48;5;232m", end="")
-                #     print(" ", end="")
-                #     print("\u001b[48;5;235m", end="")
-                # elif self.walls[i][j] == 3:
-                #     print("\u001b[48;5;52m", end="")
-                #     print(" ", end="")
-                #     print("\u001b[48;5;235m", end="")
-                # elif self.walls[i][j] == 4:
-                #     print("\u001b[48;5;94m", end="")
-                #     print(" ", end="")
-                #     print("\u001b[48;5;235m", end="")
-                # elif self.walls[i][j] == 5:
-                #     print("\u001b[48;5;63m", end="")
-                #     print(" ", end="")
-                #     print("\u001b[48;5;235m", end="")
-                # elif self.walls[i][j] == 6:
-                #     print("\u001b[48;5;28m", end="")
-                #     print(" ", end="")
-                #     print("\u001b[48;5;235m", end="")
+                # if (x//15 == i//15) and (y//36 == j//36):
+                #     if self.walls[i][j] == 1:
+                #         print("\u001b[48;5;232m", end="")
+                #         print(" ", end="")
+                #         print("\u001b[48;5;235m", end="")
+                #     elif self.walls[i][j] == 2:
+                #         print("\u001b[48;5;232m", end="")
+                #         print(" ", end="")
+                #         print("\u001b[48;5;235m", end="")
+                #     elif self.walls[i][j] == 3:
+                #         print("\u001b[48;5;52m", end="")
+                #         print(" ", end="")
+                #         print("\u001b[48;5;235m", end="")
+                #     elif self.walls[i][j] == 4:
+                #         print("\u001b[48;5;94m", end="")
+                #         print(" ", end="")
+                #         print("\u001b[48;5;235m", end="")
+                #     elif self.walls[i][j] == 5:
+                #         print("\u001b[48;5;63m", end="")
+                #         print(" ", end="")
+                #         print("\u001b[48;5;235m", end="")
+                #     elif self.walls[i][j] == 6:
+                #         print("\u001b[48;5;28m", end="")
+                #         print(" ", end="")
+                #         print("\u001b[48;5;235m", end="")
                 elif self.walls[i][j] == 8:
                     print("\u001b[48;5;136m", end="")
                     print(" ", end="")
@@ -196,21 +170,25 @@ class Labyrinth(object):
         print("Уровень: ", count)
         print("_____________________________")
         print("Комната " , "№" ,4*(x//15)+y//36+1, end="")
-        if self.rooms_place[x//15][y//36]==1:
+        if self.rooms[x//15][y//36].typeRoom == 1:
             print(", вход.", end="")
-        elif self.rooms_place[x//15][y//36]==2:
+        elif self.rooms[x//15][y//36].typeRoom==2:
             print(", выход.", end="")
-        elif self.rooms_place[x//15][y//36]==3:
+        elif self.rooms[x//15][y//36].typeRoom==3:
             print(", с монстром.", end="")
-        elif self.rooms_place[x//15][y//36]==4:
+        elif self.rooms[x//15][y//36].typeRoom==4:
             print(", с сундуком.", end="")
-        elif self.rooms_place[x//15][y//36]==5:
+        elif self.rooms[x//15][y//36].typeRoom==5:
             print(", с фонтаном.", end="")
-        elif self.rooms_place[x//15][y//36]==6:
+        elif self.rooms[x//15][y//36].typeRoom==6:
             print(", с торговцем.", end="")
-        elif self.rooms_place[x//15][y//36]==7:
+        elif self.rooms[x//15][y//36].typeRoom==7:
             print(", коридор.", end="")
-        print(" *состояние*.")
+        if self.rooms[x // 15][y // 36].check == 0:
+            print(", взаимодействия не было.")
+        else:
+            print(", взаимодействие было.")
+
         print("_____________________________")
         print("HP: ", )
         print("_____________________________")
@@ -245,16 +223,17 @@ def move(level, i, j):
 
 level = Labyrinth()
 count=1
-while not(keyboard.is_pressed('ESCAPE')):
+while not keyboard.is_pressed('esc'):
     i = 2
     j = 2
     level.generate()
-    while not(keyboard.is_pressed('RETURN') and level.rooms_place[i//15][j//36]==2):
-        time.sleep(0.001)
+    while not (keyboard.is_pressed('RETURN') and level.rooms_place[i // 15][j // 36] == 2):
+        time.sleep(0.01)
         level, i, j = move(level, i, j)
-        level.draw(i,j,count)
-    count+=1
-
-
+        level.draw(i, j, count)
+        if (level.rooms[i//15][j//36].typeRoom==3) and (level.rooms[i//15][j//36].check==0):
+            print("БОЙ НАЧАЛСЯ!")
+            input()
+    count += 1
 
 
